@@ -1,0 +1,31 @@
+<launch>
+	<node pkg="tf" type="static_transform_publisher" name="link1_broadcaster" args="1 0 0 0 0 		0 1 odom_frame velodyne_frame 100" />
+
+	<node name="procomp_client" pkg="idrive_data_logger" type="procomp_client" output="screen"/>
+
+	<node name="empatica_client" pkg="idrive_data_logger" type="empatica_client" output="screen"/>
+   
+ 	<node name="cam1_axis" pkg="axis_camera" type="axis.py" args="_hostname:=192.168.1.101" >
+		<remap from="image_raw/compressed" to="cam1_image_raw/compressed"/>
+		<remap from="camera_info" to="cam1_camera_info"/>
+ 	</node>
+	
+	
+	<node name="cam2_axis" pkg="axis_camera" type="axis.py" args="_hostname:=192.168.1.103">
+		<remap from="image_raw/compressed" to="cam2_image_raw/compressed"/>
+		<remap from="camera_info" to="cam2_camera_info"/>
+ 	</node>
+
+	<include file="$(find prosilica_camera)/streaming.launch"></include>
+
+	<include file="$(find velodyne_pointcloud)/launch/32e_points.launch">
+  	  	<arg name="calibration" value="/home/airlab/Desktop/32db.yaml"/>
+  	</include>
+	
+	<node name="velodyne_GPS_IMU" pkg="idrive_data_logger" type="velodyne_extra.py"/>
+
+	<node name="nmea_node" pkg="nmea_navsat_driver" type="nmea_topic_driver" 	     		args="_useRMC:=true"/>
+
+	<node name="ntp_driver" pkg="ntpd_driver" type="shm_driver" 				   		args="_shm_unit:=2 _time_ref_topic:=/time_reference" output="screen"/>
+	
+</launch>

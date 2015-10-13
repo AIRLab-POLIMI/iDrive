@@ -1,0 +1,15 @@
+<launch>
+	<rosparam param="plotter_seconds">3</rosparam>
+
+	<node name="rviz" pkg="rviz" type="rviz" args="-d /home/airlab/catkin_ws/src/IDRIVE_Data_Logger/rviz/idrive.rviz"/>
+	
+	<node name="procomp_plotter" pkg="idrive_data_logger" type="plotter_procomp.py" output="screen">
+		<param name="seconds_window" type="int" value="2" />
+		<param name="delta_time" type="double" value="0.01" />
+	</node>
+	
+	<node name="empatica_plotter" pkg="idrive_data_logger" type="empatica_procomp.py" output="screen">
+		<param name="seconds_window" type="int" value="2" />
+		<param name="delta_time" type="double" value="0.01" />
+	</node>
+</launch>

@@ -1,0 +1,24 @@
+<launch>
+
+	<node name="client" pkg="idrive_data_logger" type="client"/>
+   
+ 	<node name="cam1_axis" pkg="axis_camera" type="axis.py" args="_hostname:=192.168.1.101" >
+		<remap from="image_raw/compressed" to="cam1_image_raw/compressed"/>
+		<remap from="camera_info" to="cam1_camera_info"/>
+ 	</node>
+	
+	<node name="cam2_axis" pkg="axis_camera" type="axis.py" args="_hostname:=192.168.1.103" >
+		<remap from="image_raw/compressed" to="cam2_image_raw/compressed"/>
+		<remap from="camera_info" to="cam2_camera_info"/>
+ 	</node>
+
+	<node name="cam1_axis_image_view" pkg="image_view" type="image_view" args="image:=/cam1_image_raw _image_transport:=compressed" >
+ 	</node>
+
+	<node name="cam2_axis_image_view" pkg="image_view" type="image_view" args="image:=/cam2_image_raw _image_transport:=compressed" >
+ 	</node>
+	
+	<node name="mongodb_logger" pkg="mongodb_log" type="mongodb_log.py" args="-a"/>
+	
+	<node name="sensor_plotter" pkg="idrive_data_logger" type="plotter.py"/>
+</launch>
