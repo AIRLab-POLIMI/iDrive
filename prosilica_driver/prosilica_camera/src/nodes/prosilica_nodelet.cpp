@@ -438,8 +438,7 @@ private:
             return;
         }
     }
-int pippo;
-double timesave;
+
     void publishImage(tPvFrame* frame)
     {
         camera_state_ = OK;
