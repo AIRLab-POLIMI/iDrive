@@ -337,7 +337,6 @@ class SubprocessWorker(object):
             self.out_counter.increment(int(arr[1]))
             self.drop_counter.increment(int(arr[2]))
             self.qsize = int(arr[3])
-	    print(line);
             self.worker_in_counter.increment(int(arr[0]))
             self.worker_out_counter.increment(int(arr[1]))
             self.worker_drop_counter.increment(int(arr[2]))

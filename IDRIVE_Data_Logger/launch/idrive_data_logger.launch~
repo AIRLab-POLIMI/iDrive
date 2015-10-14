@@ -16,7 +16,7 @@
 		<remap from="camera_info" to="cam2_camera_info"/>
  	</node>
 
-	<include file="$(find xsens_driver_airlab)/xsens.launch"></include>
+	<include file="$(find xsens_driver_airlab)/launch/xsens.launch"></include>
 	
 	<include file="$(find prosilica_camera)/streaming.launch"></include>
 

@@ -342,7 +342,6 @@ private:
             PvAttrRangeUint32(camera_->handle(), "Width",    &dummy, &sensor_width_);
             PvAttrRangeUint32(camera_->handle(), "Height",   &dummy, &sensor_height_);
 
-
             // Parse calibration file
             std::string camera_name;
             if (camera_calibration_parsers::parseCalibrationIni(buffer, camera_name, cam_info_))
@@ -439,7 +438,8 @@ private:
             return;
         }
     }
-
+int pippo;
+double timesave;
     void publishImage(tPvFrame* frame)
     {
         camera_state_ = OK;
@@ -449,7 +449,9 @@ private:
 	    ros::Time time;
             if (processFrame(frame, img_, cam_info_, time))
             {
-                image_publisher_.publish(img_, cam_info_, time);
+		if (time.toSec() > 100000000){
+                	image_publisher_.publish(img_, cam_info_, time);
+		}
                 frames_dropped_acc_.add(0);
             }
             else
@@ -580,7 +582,7 @@ private:
                 return false;
 	    double t = (frame->TimestampHi * 4294967296 * 1.0) / 1000000000;
 	    t = t + ((frame->TimestampLo * 1.0)/ 1000000000);
-	    ROS_INFO("timestamp2 sec: %f", t);
+	    //NODELET_INFO("Camera %li\t%f", guid_, (t-ros::Time::now().toSec()));
 	    time = ros::Time(t);
             // Set the operational parameters in CameraInfo (binning, ROI)
             cam_info.binning_x = binning_x;
@@ -790,6 +792,15 @@ private:
             camera_->setGain(config.gain, prosilica::Manual);
             camera_->setAttribute("GainValue", (tPvUint32)config.gain);
         }
+	// PTP
+	 if (PvAttrEnumSet(camera_->handle(),"PtpMode","Auto") != ePvErrSuccess)
+		{
+			 NODELET_WARN("failed to set PtpMode = Auto\n");
+		}
+		else
+		{
+			NODELET_INFO("Set PtpMode = Auto\n");
+		}	    
 
         // White balance
         if (config.auto_whitebalance)

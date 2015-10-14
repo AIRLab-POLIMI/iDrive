@@ -8,7 +8,7 @@ This file exists mainly for backwards compatibility.
   <include file="$(find prosilica_camera)/launch/generic.launch">
     <arg name="camera"       value="prosilica1" />
     <arg name="ip_address"   value="192.168.1.121" />
-    <arg name="trigger_mode" value="streaming" />
+    <arg name="trigger_mode" value="fixedrate" />
     <arg name="frame_id"     value="high_def_optical_frame" />
     <arg name="guid" value="41162" />
   </include>
@@ -16,7 +16,7 @@ This file exists mainly for backwards compatibility.
   <include file="$(find prosilica_camera)/launch/generic.launch">
     <arg name="camera"       value="prosilica2" />
     <arg name="ip_address"   value="192.168.1.122" />
-    <arg name="trigger_mode" value="streaming" />
+    <arg name="trigger_mode" value="fixedrate" />
     <arg name="frame_id"     value="high_def_optical_frame" />
     <arg name="guid" value="41163" />
   </include>

@@ -42,9 +42,9 @@
 	<node name="IMU_velodybe_logger" pkg="mongodb_log" type="mongodb_log.py" args="/imu_data" output="screen"/>
 	<node name="IMU_xsens_logger" pkg="mongodb_log" type="mongodb_log.py" args="/xsens/imu" output="screen"/>
 	<node name="mag_xsens_logger" pkg="mongodb_log" type="mongodb_log.py" args="/xsens/mag" output="screen"/>
-	<node name="prosilica1_logger" pkg="mongodb_log" type="mongodb_log.py" args="/prosilica1/image_raw/compressed" output="screen"/>
+	<node name="prosilica1_logger" pkg="mongodb_log" type="mongodb_log.py" args="/prosilica1/image_raw" output="screen"/>
 	<node name="prosilica1_camera_info_logger" pkg="mongodb_log" type="mongodb_log.py" args="/prosilica1/camera_info" output="screen"/>
-	<node name="prosilica2_logger" pkg="mongodb_log" type="mongodb_log.py" args="/prosilica2/image_raw/compressed" output="screen"/>
+	<node name="prosilica2_logger" pkg="mongodb_log" type="mongodb_log.py" args="/prosilica2/image_raw" output="screen"/>
 	<node name="prosilica2_camera_info_logger" pkg="mongodb_log" type="mongodb_log.py" args="/prosilica2/camera_info" output="screen"/>
 
 </launch>
