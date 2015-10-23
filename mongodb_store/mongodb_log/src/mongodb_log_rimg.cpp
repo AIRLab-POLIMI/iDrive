@@ -27,6 +27,7 @@
 #include <mongodb_store/util.h>
 
 #include <sensor_msgs/Image.h>
+#include "heartbeat/HeartbeatClient.h"
 
 using namespace mongo;
 
@@ -39,6 +40,10 @@ unsigned int out_counter;
 unsigned int qsize;
 unsigned int drop_counter;
 
+HeartbeatClient *heart;
+bool first = true;
+bool quit = true;
+
 static pthread_mutex_t in_counter_mutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t out_counter_mutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t drop_counter_mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -46,6 +51,13 @@ static pthread_mutex_t qsize_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 void msg_callback(const sensor_msgs::Image::ConstPtr& msg)
 {
+  if (first){
+    if (!heart->setState(heartbeat::State::STARTED)){
+      ROS_WARN("Heartbeat state not set");
+    }
+    first = false;
+  }
+  
   BSONObjBuilder document;
   Date_t stamp = msg->header.stamp.sec * 1000.0 + msg->header.stamp.nsec / 1000000.0;
   document.append("header", BSON(   "seq" << msg->header.seq
@@ -75,7 +87,6 @@ void msg_callback(const sensor_msgs::Image::ConstPtr& msg)
 void print_count(const ros::TimerEvent &te)
 {
   unsigned int l_in_counter, l_out_counter, l_drop_counter, l_qsize;
-
   pthread_mutex_lock(&in_counter_mutex);
   l_in_counter = in_counter; in_counter = 0;
   pthread_mutex_unlock(&in_counter_mutex);
@@ -94,6 +105,13 @@ void print_count(const ros::TimerEvent &te)
 
   printf("%u:%u:%u:%u\n", l_in_counter, l_out_counter, l_drop_counter, l_qsize);
   fflush(stdout);
+}
+
+void mySigintHandler(int sig)
+{
+  heart->stop();
+  ros::shutdown();
+  exit(0);
 }
 
 
@@ -128,23 +146,35 @@ int main(int argc, char **argv)
     printf("No node name given.\n");
     exit(-2);
   }
-
   ros::init(argc, argv, nodename);
   ros::NodeHandle n;
 
+  HeartbeatClient hb(n, 1);
+  heart = &hb;
+	hb.start();
+  if (!hb.setState(heartbeat::State::INIT)){
+    ROS_WARN("Heartbeat state not set");
+  }
+  
+    signal(SIGINT, mySigintHandler);
+  
   std::string errmsg;
   mongodb_conn = new DBClientConnection(/* auto reconnect*/ true);
   if (! mongodb_conn->connect(mongodb, errmsg)) {
     ROS_ERROR("Failed to connect to MongoDB: %s", errmsg.c_str());
+    if (!hb.setState(heartbeat::State::STOPPED)){
+      ROS_WARN("Heartbeat state not set");
+    }
     return -1;
   }
 
   ros::Subscriber sub = n.subscribe<sensor_msgs::Image>(topic, 1000, msg_callback);
   ros::Timer count_print_timer = n.createTimer(ros::Duration(5, 0), print_count);
-
   ros::spin();
 
+  hb.stop();	
   delete mongodb_conn;
+  
 
   return 0;
 }

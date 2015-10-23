@@ -4,7 +4,7 @@ project(mongodb_log)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED rospy roslib rosgraph rostopic tf sensor_msgs mongodb_store)
+find_package(catkin REQUIRED rospy roslib rosgraph rostopic tf sensor_msgs mongodb_store heartbeat)
 
 ## System dependencies are found with CMake's conventions
 find_package(Boost REQUIRED COMPONENTS system thread filesystem)
@@ -79,6 +79,7 @@ target_link_libraries(mongodb_log_tf
   mongoclient
   ssl
   crypto
+  heartbeat
   ${Boost_LIBRARIES}
 )
 target_link_libraries(mongodb_log_pcl
@@ -86,6 +87,7 @@ target_link_libraries(mongodb_log_pcl
   mongoclient
   ssl
   crypto
+  heartbeat
   ${Boost_LIBRARIES}
 )
 target_link_libraries(mongodb_log_cimg
@@ -93,6 +95,7 @@ target_link_libraries(mongodb_log_cimg
   mongoclient
   ssl
   crypto
+  heartbeat
   ${Boost_LIBRARIES}
 )
 target_link_libraries(mongodb_log_rimg
@@ -100,6 +103,7 @@ target_link_libraries(mongodb_log_rimg
   mongoclient
   ssl
   crypto
+  heartbeat
   ${Boost_LIBRARIES}
 )
 

@@ -1,1 +1,1 @@
-std_msgs/String node_name
+string node_name

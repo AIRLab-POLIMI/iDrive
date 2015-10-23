@@ -24,6 +24,7 @@ int main(int argc, char **argv) {
 
 	while (--cnt > 0) {
 		if (cnt % 1 == 0) {
+			hb.alive();
 			state = hb.getState();
 			ROS_INFO("Current: %d", state);
 

@@ -130,7 +130,10 @@ add_subdirectory(src/empatica_socket_client/)
 #   scripts/my_python_script
 #   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 # )
-
+install(PROGRAMS
+  scripts/aa.py
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
 ## Mark executables and/or libraries for installation
 # install(TARGETS IDRIVE_Data_Logger IDRIVE_Data_Logger_node
 #   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}

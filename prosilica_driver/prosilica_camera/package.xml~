@@ -46,6 +46,7 @@
   <run_depend>nodelet</run_depend>
   <run_depend>nodelet_topic_tools</run_depend>
   <run_depend>heartbeat</run_depend>
+heartbeat
   
   <export>
     <nodelet plugin="${prefix}/plugins/nodelet_plugins.xml" />

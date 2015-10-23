@@ -1,5 +1,6 @@
 #include "ros/ros.h"
 #include "std_msgs/String.h"
+#include "heartbeat/HeartbeatClient.h"
 #include <sstream>
 #include <cstring>
 #include <sys/socket.h>
@@ -7,34 +8,39 @@
 #include <idrive_data_logger/Bio_sensor.h>
 #include <fcntl.h>
 #include <signal.h>
-
 bool first = true;
- int socketfd ; // The socket descripter
+int socketfd ; // The socket descripter
+HeartbeatClient *heart;
 
-bool HandleError(ssize_t control){
-    if (control == 0) {
-        ROS_INFO("host shut down.");
-        exit(0);
-        return false;
-    }else if (control == -1) {
-        ROS_INFO("recieve error!");
-        return false;
-    }else {
-        if (first) {
-            ROS_INFO("Recieving data");
-            first = false;
-        }
-    }
-    return true;
-}
 
 void mySigintHandler(int sig)
 {
    ROS_INFO("client stop");
    close(socketfd);
   // All the default sigint handler does is call shutdown()
+  heart->stop();
   ros::shutdown();
   exit(0);
+}
+
+bool HandleError(ssize_t control){
+    if (control == 0) {
+        ROS_INFO("host shut down.");
+        mySigintHandler(0);
+        return false;
+    }else if (control == -1) {
+        ROS_INFO("recieve error!");
+        return false;
+    }else {
+        if (first) {
+            ROS_INFO("Recieving procomp data");
+            if(!heart->setState(heartbeat::State::STARTED)){
+                ROS_WARN("Heartbeat state not set");
+            }
+            first = false;
+        }
+    }
+    return true;
 }
 
 //create the socket and connect to the server. Return the reference of the socket
@@ -129,13 +135,25 @@ int socket_setup(){
 
 int main(int argc, char **argv)
 {
+    heartbeat::State::_value_type state;
+    state = heartbeat::State::STOPPED;
+    
     ros::init(argc, argv, "procomp_socket_client");
     ros::NodeHandle n;
+    
+    HeartbeatClient hb(n, 1);
+    heart = &hb;
+	hb.start();
+    
     signal(SIGINT, mySigintHandler);
     ros::Publisher publisher = n.advertise<idrive_data_logger::Bio_sensor>("procomp_sensor", 1000);
     idrive_data_logger::Bio_sensor msg;
     ros::Rate loop_rate(100);
-
+    
+    if(!hb.setState(heartbeat::State::INIT)){
+        ROS_WARN("Heartbeat state not set");
+    }
+    
     socketfd = socket_setup();
 
     ssize_t bytes_recieved;

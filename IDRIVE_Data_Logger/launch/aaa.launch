@@ -1,0 +1,18 @@
+<launch>
+	<node pkg="tf" type="static_transform_publisher" name="link1_broadcaster" args="1 0 0 0 0 		0 1 odom_frame velodyne_frame 100" />
+
+	<node name="procomp_client" pkg="idrive_data_logger" type="procomp_client" output="screen"/>
+
+	<node name="empatica_client" pkg="idrive_data_logger" type="empatica_client" output="screen"/>
+	
+	<include file="$(find prosilica_camera)/streaming.launch"></include>
+
+	
+	<node name="procomp_logger" pkg="mongodb_log" type="mongodb_log.py" args="/procomp_sensor" output="screen"/>
+	<node name="empatica_logger" pkg="mongodb_log" type="mongodb_log.py" args="/empatica_sensor" output="screen"/>
+	<node name="prosilica1_logger" pkg="mongodb_log" type="mongodb_log.py" args="/prosilica1/image_raw" output="screen"/>
+	<node name="prosilica1_camera_info_logger" pkg="mongodb_log" type="mongodb_log.py" args="/prosilica1/camera_info" output="screen"/>
+	<node name="prosilica2_logger" pkg="mongodb_log" type="mongodb_log.py" args="/prosilica2/image_raw" output="screen"/>
+	<node name="prosilica2_camera_info_logger" pkg="mongodb_log" type="mongodb_log.py" args="/prosilica2/camera_info" output="screen"/>
+
+</launch>

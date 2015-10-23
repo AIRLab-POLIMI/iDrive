@@ -1,0 +1,50 @@
+<launch>
+	<node pkg="tf" type="static_transform_publisher" name="link1_broadcaster" args="1 0 0 0 0 		0 1 odom_frame velodyne_frame 100" />
+
+	<node name="procomp_client" pkg="idrive_data_logger" type="procomp_client" output="screen"/>
+
+	<node name="empatica_client" pkg="idrive_data_logger" type="empatica_client" output="screen"/>
+   
+ 	<node name="cam1_axis" pkg="axis_camera" type="axis.py" args="_hostname:=192.168.1.101" >
+		<remap from="image_raw/compressed" to="cam1_image_raw/compressed"/>
+		<remap from="camera_info" to="cam1_camera_info"/>
+ 	</node>
+	
+	
+	<node name="cam2_axis" pkg="axis_camera" type="axis.py" args="_hostname:=192.168.1.103">
+		<remap from="image_raw/compressed" to="cam2_image_raw/compressed"/>
+		<remap from="camera_info" to="cam2_camera_info"/>
+ 	</node>
+
+	<include file="$(find xsens_driver_airlab)/launch/xsens.launch"></include>
+	
+	<include file="$(find prosilica_camera)/streaming.launch"></include>
+
+	<include file="$(find velodyne_pointcloud)/launch/32e_points.launch">
+  	  	<arg name="calibration" value="/home/airlab/Desktop/32db.yaml"/>
+  	</include>
+	
+	<node name="velodyne_GPS_IMU" pkg="idrive_data_logger" type="velodyne_extra.py"/>
+
+	<node name="nmea_node" pkg="nmea_navsat_driver" type="nmea_topic_driver" 	     		args="_useRMC:=true"/>
+
+	<node name="ntp_driver" pkg="ntpd_driver" type="shm_driver" 				   		args="_shm_unit:=2 _time_ref_topic:=/time_reference" output="screen"/>
+	
+	<node name="procomp_logger" pkg="mongodb_log" type="mongodb_log.py" args="/procomp_sensor" output="screen"/>
+	<node name="empatica_logger" pkg="mongodb_log" type="mongodb_log.py" args="/empatica_sensor" output="screen"/>
+	<node name="cam1_axis_logger" pkg="mongodb_log" type="mongodb_log.py" args="/cam1_image_raw/compressed" output="screen"/>
+	<node name="cam2_axis_logger" pkg="mongodb_log" type="mongodb_log.py" args="/cam2_image_raw/compressed" output="screen"/>
+	<node name="velodyne_points_logger" pkg="mongodb_log" type="mongodb_log.py" args="/velodyne_points" output="screen"/>
+	<node name="velodyne_packets_logger" pkg="mongodb_log" type="mongodb_log.py" args="/velodyne_packets" output="screen"/>
+	<node name="GPS_fix_logger" pkg="mongodb_log" type="mongodb_log.py" args="/fix" output="screen"/>
+	<node name="GPS_vel_logger" pkg="mongodb_log" type="mongodb_log.py" args="/vel" output="screen"/>
+	<node name="GPS_time_reference_logger" pkg="mongodb_log" type="mongodb_log.py" args="/time_reference" output="screen"/>
+	<node name="IMU_velodybe_logger" pkg="mongodb_log" type="mongodb_log.py" args="/imu_data" output="screen"/>
+	<node name="IMU_xsens_logger" pkg="mongodb_log" type="mongodb_log.py" args="/xsens/imu" output="screen"/>
+	<node name="mag_xsens_logger" pkg="mongodb_log" type="mongodb_log.py" args="/xsens/mag" output="screen"/>
+	<node name="prosilica1_logger" pkg="mongodb_log" type="mongodb_log.py" args="/prosilica1/image_raw" output="screen"/>
+	<node name="prosilica1_camera_info_logger" pkg="mongodb_log" type="mongodb_log.py" args="/prosilica1/camera_info" output="screen"/>
+	<node name="prosilica2_logger" pkg="mongodb_log" type="mongodb_log.py" args="/prosilica2/image_raw" output="screen"/>
+	<node name="prosilica2_camera_info_logger" pkg="mongodb_log" type="mongodb_log.py" args="/prosilica2/camera_info" output="screen"/>
+
+</launch>

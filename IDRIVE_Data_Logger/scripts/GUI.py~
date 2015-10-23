@@ -242,10 +242,10 @@ class MainWindow(QtGui.QMainWindow):
 
 	      self.procomp_log_state.setText(Node_state[self.procomp_log_state_val])
 	      self.empatica_log_state.setText(Node_state[self.empatica_log_state_val])
-	      self.prosilica1_image_log_state.setText(Node_state[self.prosilica1_image_log_state_val])
-	      self.prosilica1_info_log_state.setText(Node_state[self.prosilica1_info_log_state_val])
-	      self.prosilica2_image_log_state.setText(Node_state[self.prosilica2_image_log_state_val])
-	      self.prosilica2_info_log_state.setText(Node_state[self.prosilica2_info_log_state_val])
+	      self.prosilica1_image_log_state.setText(Node_state[self.empatica_log_state_val])
+	      self.prosilica1_info_log_state.setText(Node_state[self.empatica_log_state_val])
+	      self.prosilica2_image_log_state.setText(Node_state[self.empatica_log_state_val])
+	      self.prosilica2_info_log_state.setText(Node_state[self.empatica_log_state_val])
 
 	      self.empatica_dlv.setText(str(self.empatica_dlv_val))
    	      self.empatica_drp.setText(str(self.empatica_drp_val))

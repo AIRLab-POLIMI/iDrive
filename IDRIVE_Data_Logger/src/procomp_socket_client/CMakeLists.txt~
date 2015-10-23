@@ -9,6 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   std_msgs
 )
+find_package(heartbeat REQUIRED)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -94,6 +95,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## Your package locations should be listed before other locations
 # include_directories(include)
 include_directories(${catkin_INCLUDE_DIRS})
+include_directories(${heartbeat_INCLUDE_DIRS})
 
 ## Declare a cpp library
 # add_library(prova_socket_client
@@ -101,14 +103,15 @@ include_directories(${catkin_INCLUDE_DIRS})
 # )
 
 ## Declare a cpp executable
- add_executable(client src/procomp_client.cpp)
+ add_executable(procomp_client src/procomp_client.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
 # add_dependencies(prova_socket_client_node prova_socket_client_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
- target_link_libraries(client ${catkin_LIBRARIES})
+ target_link_libraries(procomp_client ${catkin_LIBRARIES})
+ target_link_libraries(empatica_client ${heartbeat_LIBRARIES})
 
 #############
 ## Install ##

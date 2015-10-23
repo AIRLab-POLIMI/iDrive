@@ -27,7 +27,7 @@ private:
 	void state_callback(const heartbeat::State::ConstPtr& msg);
 public:
 	HeartbeatClient(ros::NodeHandle& nh, float heartbeat_timeout = 0);
-	//~HeartbeatClient(void);
+	~HeartbeatClient(void);
 	void start(void);
 	void stop(void);
 	bool setState(heartbeat::State::_value_type state);

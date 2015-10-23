@@ -18,7 +18,6 @@ find_package(catkin REQUIRED COMPONENTS
    polled_camera
    nodelet
    nodelet_topic_tools
-   heartbeat
    )
 
 find_package(Boost REQUIRED COMPONENTS thread)

@@ -10,6 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   message_generation
   cmake_modules REQUIRED
+  heartbeat
 )
 
 ## System dependencies are found with CMake's conventions
@@ -98,6 +99,7 @@ catkin_package(
 include_directories(${catkin_INCLUDE_DIRS})
 
 add_subdirectory(src/procomp_socket_client/)
+add_subdirectory(src/empatica_socket_client/)
 
 ## Declare a cpp library
 # add_library(IDRIVE_Data_Logger
@@ -129,7 +131,10 @@ add_subdirectory(src/procomp_socket_client/)
 #   scripts/my_python_script
 #   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 # )
-
+install(PROGRAMS
+  scripts/aa.py
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
 ## Mark executables and/or libraries for installation
 # install(TARGETS IDRIVE_Data_Logger IDRIVE_Data_Logger_node
 #   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}

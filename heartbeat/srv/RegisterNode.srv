@@ -1,4 +1,4 @@
-std_msgs/String node_name
-std_msgs/Float32 timeout
+string node_name
+float32 timeout
 ---
 bool success

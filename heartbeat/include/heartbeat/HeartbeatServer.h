@@ -22,6 +22,8 @@ private:
 	heartbeat::State::_value_type _state;
 	float _state_period;
 	std::map<std::string, ros::Timer> _registered_nodes;
+	std::map<std::string, heartbeat::State::_value_type> _registered_node_states;
+	std::map<std::string, heartbeat::State::_value_type>::iterator it;
 
 	void heartbeat_callback(const heartbeat::Heartbeat::ConstPtr& msg);
 	void heartbeat_timeout(const ros::TimerEvent&);

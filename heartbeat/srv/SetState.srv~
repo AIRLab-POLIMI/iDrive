@@ -1,5 +1,5 @@
 State from
 State to
-string node_name
+std_msgs/String node_name
 ---
 State current

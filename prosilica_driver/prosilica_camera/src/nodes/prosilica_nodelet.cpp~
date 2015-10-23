@@ -438,8 +438,7 @@ private:
             return;
         }
     }
-int pippo;
-double timesave;
+
     void publishImage(tPvFrame* frame)
     {
         camera_state_ = OK;
@@ -450,10 +449,7 @@ double timesave;
             if (processFrame(frame, img_, cam_info_, time))
             {
 		if (time.toSec() > 100000000){
-			NODELET_INFO("pippo");
                 	image_publisher_.publish(img_, cam_info_, time);
-		}else{
-			NODELET_INFO("pluto");
 		}
                 frames_dropped_acc_.add(0);
             }

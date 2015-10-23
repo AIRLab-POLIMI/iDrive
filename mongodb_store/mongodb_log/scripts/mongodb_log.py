@@ -27,7 +27,9 @@ from __future__ import division, with_statement
 PACKAGE_NAME='mongodb_log'
 NODE_NAME='mongodb_log'
 NODE_NAME_TEMPLATE='%smongodb_log'
+#WORKER_NODE_NAME = "%smongodb_log_worker_%d_%s"
 WORKER_NODE_NAME = "%smongodb_log_worker_%d_%s"
+LOGGER = "%s_logger"
 QUEUE_MAXSIZE = 100
 
 # import roslib; roslib.load_manifest(PACKAGE_NAME)
@@ -82,9 +84,10 @@ import roslib.message
 #from rospy import Time, Duration
 import rostopic
 
-
 from pymongo import SLOW_ONLY
 from pymongo.errors import InvalidDocument, InvalidStringData
+
+from heartbeat.HeartbeatClientPython import HeartbeatClientPy
 
 MongoClient = mongodb_store.util.import_MongoClient()
 
@@ -142,7 +145,7 @@ class WorkerProcess(object):
         self.mongodb_name = mongodb_name
         self.nodename_prefix = nodename_prefix
         self.quit = Value('i', 0)
-
+	self.hb = HeartbeatClientPy()
         # print "Creating process %s" % self.name
         self.process = Process(name=self.name, target=self.run)
         # self.process = Thread(name=self.name, target=self.run)
@@ -171,6 +174,8 @@ class WorkerProcess(object):
         worker_node_name = WORKER_NODE_NAME % (self.nodename_prefix, self.id, self.collname)
         # print "Calling init_node with %s from process %s" % (worker_node_name, mp.current_process())
         rospy.init_node(worker_node_name, anonymous=False)
+	self.hb.start(LOGGER % (self.collname))
+	self.hb.set_node_state(1)
         self.subscriber = None
         while not self.subscriber and not self.is_quit():
             try:
@@ -178,27 +183,28 @@ class WorkerProcess(object):
                 self.subscriber = rospy.Subscriber(real_topic, msg_class, self.enqueue, self.topic)
             except rostopic.ROSTopicIOException:
                 print("FAILED to subscribe, will keep trying %s" % self.name)
+		self.hb.set_node_state(0)
                 time.sleep(randint(1,10))
             except rospy.ROSInitException:
                 print("FAILED to initialize, will keep trying %s" % self.name)
+		self.hb.set_node_state(0)
                 time.sleep(randint(1,10))
                 self.subscriber = None
 
     def run(self):
         self.init()
-
         print("ACTIVE: %s" % self.name)
-
+	self.hb.set_node_state(2)
         # run the thread
         self.dequeue()
-
         # free connection
         # self.mongoconn.end_request()
 
     def is_quit(self):
         return self.quit.value == 1
 
-    def shutdown(self):
+    def shutdown(self, name):
+	self.hb.stop(LOGGER % (name))
         if not self.is_quit():
             #print("SHUTDOWN %s qsize %d" % (self.name, self.queue.qsize()))
             self.quit.value = 1
@@ -331,7 +337,7 @@ class SubprocessWorker(object):
     def run(self):
         while not self.quit:
             line = self.process.stdout.readline().rstrip()
-            if line == "": continue
+            if line == "" or line[1] == "[": continue
             arr = string.split(line, ":")
             self.in_counter.increment(int(arr[0]))
             self.out_counter.increment(int(arr[1]))
@@ -341,9 +347,10 @@ class SubprocessWorker(object):
             self.worker_out_counter.increment(int(arr[1]))
             self.worker_drop_counter.increment(int(arr[2]))
 
-    def shutdown(self):
+    def shutdown(self, name):
         self.quit = True
-        self.process.kill()
+        #self.process.kill()
+	os.kill(self.process.pid, signal.SIGINT)
         self.process.wait()
 
 
@@ -499,7 +506,7 @@ class MongoWriter(object):
         if hasattr(self, "all_topics_timer"): self.all_topics_timer.cancel()
         for name, w in self.workers.items():
             #print("Shutdown %s" % name)
-            w.shutdown()
+            w.shutdown(name)
 
 
     def start_all_topics_timer(self):

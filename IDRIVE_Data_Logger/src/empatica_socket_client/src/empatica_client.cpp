@@ -1,5 +1,6 @@
 #include "ros/ros.h"
 #include "std_msgs/String.h"
+#include "heartbeat/HeartbeatClient.h"
 #include <sstream>
 #include <string>
 #include <sys/socket.h>
@@ -9,6 +10,7 @@
 #include <idrive_data_logger/Bio_sensor.h>
 #include <unistd.h>
 #include <signal.h>
+
 
 //constant string part to send to the server
 const char SERVER_STATUS[16] = "server_status\r\n";
@@ -37,19 +39,34 @@ const char R_TMP_SUBSCRIBE[27] = "R device_subscribe tmp OK\n";
 bool first = true;
 int socketfd;
 bool client_connected = false;
+HeartbeatClient *heart;
+
+
+void mySigintHandler(int sig)
+{
+   ROS_INFO("client stop");
+   if (client_connected){
+       send(socketfd ,  DEVICE_DISCONNECT , strlen( DEVICE_DISCONNECT) , 0);
+   }
+   close(socketfd); 
+  // All the default sigint handler does is call shutdown()
+  heart->stop();
+  ros::shutdown();
+  exit(0);
+}
 
 //handle the reading error
 bool HandleError(ssize_t control){
     if (control == 0) {
         ROS_INFO("host shut down.");
-        exit(0);
+        mySigintHandler(0);
         return false;
     }else if (control == -1) {
         ROS_INFO("recieve error!");
         return false;
     }else {
         if (first) {
-            ROS_INFO("Recieving data");
+            ROS_INFO("Recieving empatica data");
             first = false;
         }
     }
@@ -76,18 +93,6 @@ void read(int socketfd, char result[256]){
     }else if(i == 0){
         result[i]= '\0';
     }
-}
-
-void mySigintHandler(int sig)
-{
-   ROS_INFO("client stop");
-   if (client_connected){
-       send(socketfd ,  DEVICE_DISCONNECT , strlen( DEVICE_DISCONNECT) , 0);
-   }
-   close(socketfd); 
-  // All the default sigint handler does is call shutdown()
-  ros::shutdown();
-  exit(0);
 }
 
 //extract the first Empatica device ID from the response of the server
@@ -236,16 +241,27 @@ int socket_setup(){
 }
 
 int main(int argc, char **argv)
-{
+{   
+    heartbeat::State::_value_type state;
+    state = heartbeat::State::STOPPED;
+    
     ros::init(argc, argv, "empatica_socket_client");
     ros::NodeHandle n;
+    
+    HeartbeatClient hb(n, 1);
+    heart = &hb;
+	hb.start();
     // Override the default ros sigint handler.
     // This must be set after the first NodeHandle is created.
     signal(SIGINT, mySigintHandler);
     ros::Publisher publisher = n.advertise<idrive_data_logger::Bio_sensor>("empatica_sensor", 1000);
     idrive_data_logger::Bio_sensor msg;
     ros::Rate loop_rate(100);
-   
+    
+    if(!hb.setState(heartbeat::State::INIT)){
+        ROS_WARN("Heartbeat state not set");
+    }
+    
    char response[256];
    
    socketfd = socket_setup();
@@ -372,7 +388,7 @@ int main(int argc, char **argv)
        read(socketfd, response);
    }   
    ROS_INFO("BVP stream on");
-  
+   
    //Read the sensor data from the streams
    char sensor_type[5];
    float data[3];
@@ -384,6 +400,10 @@ int main(int argc, char **argv)
    double prev_timestamp_ibi = 0;
    double timestamp_diff = 0;
    double freq =-1;
+   
+    if(!hb.setState(heartbeat::State::STARTED)){
+        ROS_WARN("Heartbeat state not set");
+    }
    
    while (ros::ok())
    {
