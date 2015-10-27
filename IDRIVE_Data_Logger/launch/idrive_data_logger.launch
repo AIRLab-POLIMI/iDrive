@@ -5,14 +5,14 @@
 
 	<node name="empatica_client" pkg="idrive_data_logger" type="empatica_client" output="screen"/>
    
- 	<node name="cam1_axis" pkg="axis_camera" type="axis.py" args="_hostname:=192.168.1.101" >
-		<remap from="image_raw/compressed" to="cam1_image_raw/compressed"/>
+ 	<node name="axis1" pkg="axis_camera" type="axis.py" args="_hostname:=192.168.1.101" >
+		<remap from="image_raw/compressed" to="axis1/image_raw/compressed"/>
 		<remap from="camera_info" to="cam1_camera_info"/>
  	</node>
 	
 	
-	<node name="cam2_axis" pkg="axis_camera" type="axis.py" args="_hostname:=192.168.1.103">
-		<remap from="image_raw/compressed" to="cam2_image_raw/compressed"/>
+	<node name="axis2" pkg="axis_camera" type="axis.py" args="_hostname:=192.168.1.103">
+		<remap from="image_raw/compressed" to="axis2/image_raw/compressed"/>
 		<remap from="camera_info" to="cam2_camera_info"/>
  	</node>
 

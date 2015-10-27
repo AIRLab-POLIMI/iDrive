@@ -53,9 +53,12 @@
 #include <prosilica_camera/ProsilicaCameraConfig.h>
 #include "prosilica/prosilica.h"
 #include "prosilica/rolling_sum.h"
+#include "heartbeat/HeartbeatClient.h"
+#include <signal.h>
 
 bool prosilica_inited = false;//for if the nodelet is loaded multiple times in the same manager
 int num_cameras = 0;
+HeartbeatClient *heart;
 
 namespace prosilica_camera
 {
@@ -80,7 +83,6 @@ public:
         trigger_sub_.shutdown();
         poll_srv_.shutdown();
         image_publisher_.shutdown();
-
         --num_cameras;
         if(num_cameras<=0)
         {
@@ -175,7 +177,15 @@ private:
     {
         ros::NodeHandle& nh = getNodeHandle();
         ros::NodeHandle& pn = getPrivateNodeHandle();
-
+        
+         HeartbeatClient hb(nh, 1);
+         heart = &hb;
+	     hb.start();
+         
+         if(!hb.setState(heartbeat::State::INIT)){
+            ROS_WARN("Heartbeat state not set");
+         }
+        
         //! initialize prosilica if necessary
         if(!prosilica_inited)
         {
@@ -247,6 +257,9 @@ private:
                     camera_ = boost::make_shared<prosilica::Camera>((unsigned long)guid_);
                     updater.setHardwareIDf("%d", guid_);
                     NODELET_INFO("Started Prosilica camera with guid \"%lu\"", guid_);
+                    if(!heart->setState(heartbeat::State::STARTED)){
+                        ROS_WARN("Heartbeat state not set");
+                    }
 
                 }
                 else if(!ip_address_.empty())
@@ -259,6 +272,9 @@ private:
                     updater.setHardwareIDf("%d", guid_);
 
                     NODELET_INFO("Started Prosilica camera with guid \"%d\"", (int)camera_->guid());
+                    if(!heart->setState(heartbeat::State::STARTED)){
+                        ROS_WARN("Heartbeat state not set");
+                    }
                 }
                 else
                 {
@@ -415,13 +431,12 @@ private:
             return;
         camera_->removeEvents();
         camera_->stop();
-
     }
 
     void kill(unsigned long guid)
     {
         if(guid == guid_)
-        {
+        {   
             NODELET_WARN("[%s] got kill request for prosilica camera %lu",getName().c_str(), guid);
             //! Make sure we interrupt initialization (if it happened to still execute).
             init_thread_.interrupt();

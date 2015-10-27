@@ -8,8 +8,12 @@
 #include <sensor_msgs/MagneticField.h>
 #include <sensor_msgs/Imu.h>
 #include "xSensImu/XsensDriver.hpp"
+#include "heartbeat/HeartbeatClient.h"
+#include <signal.h>
 
 #define NAME_OF_THIS_NODE "xsensImu"
+
+HeartbeatClient *heart;
 
 class ROSnode {
 private:
@@ -105,16 +109,42 @@ void ROSnode::getData() {
   }
 }
 
+void mySigintHandler(int sig)
+{ 
+  // All the default sigint handler does is call shutdown()
+  heart->stop();
+  ros::shutdown();
+  exit(0);
+}
+
+
 int main(int argc, char **argv) {
   ros::init(argc, argv, NAME_OF_THIS_NODE);
+  ros::NodeHandle n;
+    
+  HeartbeatClient hb(n, 1);
+  heart = &hb;
+	hb.start();
   
+  signal(SIGINT, mySigintHandler);
+  
+  if(!hb.setState(heartbeat::State::INIT)){ 
+    ROS_WARN("Heartbeat state not set");
+  }
+    
   ROSnode node;
   
-  if(!node.Prepare())
+  if(!node.Prepare()){
+    if(!hb.setState(heartbeat::State::STOPPED)){ 
+      ROS_WARN("Heartbeat state not set");
+    }
     return 1;
+  }
 
   ros::Rate loopRate(node.getRate());
-  
+   if(!hb.setState(heartbeat::State::STARTED)){ 
+      ROS_WARN("Heartbeat state not set");
+    }
   while(ros::ok()) {
     node.getData();
 //    ros::spinOnce();

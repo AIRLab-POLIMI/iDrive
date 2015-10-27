@@ -34,14 +34,31 @@
 
 #include <ros/ros.h>
 #include <nodelet/loader.h>
+#include "heartbeat/HeartbeatClient.h"
+#include <signal.h>
+
+HeartbeatClient *heart;
+
+void mySigintHandler(int sig)
+{
+  // All the default sigint handler does is call shutdown()
+  heart->stop();
+  ros::shutdown();
+  exit(0);
+}
 
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "prosilica_node");
+  ros::NodeHandle n;
+  HeartbeatClient hb(n, 1);
+  heart = &hb;
+  signal(SIGINT, mySigintHandler);
   nodelet::Loader manager(true);
   nodelet::M_string remappings;
   nodelet::V_string my_argv;
   manager.load(ros::this_node::getName(), "prosilica_camera/driver", remappings, my_argv);
   ros::spin();
+  ROS_INFO("ciao");
 }
 

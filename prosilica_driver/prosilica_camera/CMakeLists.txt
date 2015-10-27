@@ -34,7 +34,7 @@ add_library(prosilica src/libprosilica/prosilica.cpp)
 target_link_libraries(prosilica ${catkin_LIBRARIES})
 
 add_library(prosilica_nodelet src/nodes/prosilica_nodelet.cpp)
-target_link_libraries(prosilica_nodelet prosilica ${catkin_LIBRARIES})
+target_link_libraries(prosilica_nodelet prosilica ${catkin_LIBRARIES} heartbeat)
 class_loader_hide_library_symbols(prosilica_nodelet)
 
 add_executable(prosilica_node src/nodes/prosilica_node.cpp)

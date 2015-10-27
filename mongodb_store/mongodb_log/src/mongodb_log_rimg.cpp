@@ -42,7 +42,6 @@ unsigned int drop_counter;
 
 HeartbeatClient *heart;
 bool first = true;
-bool quit = true;
 
 static pthread_mutex_t in_counter_mutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t out_counter_mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -156,7 +155,7 @@ int main(int argc, char **argv)
     ROS_WARN("Heartbeat state not set");
   }
   
-    signal(SIGINT, mySigintHandler);
+  signal(SIGINT, mySigintHandler);
   
   std::string errmsg;
   mongodb_conn = new DBClientConnection(/* auto reconnect*/ true);
@@ -171,8 +170,7 @@ int main(int argc, char **argv)
   ros::Subscriber sub = n.subscribe<sensor_msgs::Image>(topic, 1000, msg_callback);
   ros::Timer count_print_timer = n.createTimer(ros::Duration(5, 0), print_count);
   ros::spin();
-
-  hb.stop();	
+	
   delete mongodb_conn;
   
 

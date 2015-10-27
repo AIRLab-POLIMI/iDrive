@@ -118,7 +118,7 @@ bool HeartbeatClient::setState(heartbeat::State::_value_type to_state) {
 	heartbeat::SetState req_state;
 	req_state.request.from.value = _state;
 	req_state.request.to.value = to_state;
-	req_state.request.node_name = ros::this_node::getName();;
+	req_state.request.node_name = ros::this_node::getName();
 	if (!_state_service.call(req_state)) {
 		return false;
 	}

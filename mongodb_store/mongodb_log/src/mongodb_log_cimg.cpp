@@ -27,6 +27,7 @@
 #include <mongodb_store/util.h>
 
 #include <sensor_msgs/CompressedImage.h>
+#include "heartbeat/HeartbeatClient.h"
 
 using namespace mongo;
 
@@ -39,6 +40,9 @@ unsigned int out_counter;
 unsigned int qsize;
 unsigned int drop_counter;
 
+HeartbeatClient *heart;
+bool first = true;
+
 static pthread_mutex_t in_counter_mutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t out_counter_mutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t drop_counter_mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -46,6 +50,12 @@ static pthread_mutex_t qsize_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 void msg_callback(const sensor_msgs::CompressedImage::ConstPtr& msg)
 {
+  if (first){
+    if (!heart->setState(heartbeat::State::STARTED)){
+      ROS_WARN("Heartbeat state not set");
+    }
+    first = false;
+  }
   BSONObjBuilder document;
 
   Date_t stamp = msg->header.stamp.sec * 1000.0 + msg->header.stamp.nsec / 1000000.0;
@@ -93,6 +103,12 @@ void print_count(const ros::TimerEvent &te)
   fflush(stdout);
 }
 
+void mySigintHandler(int sig)
+{
+  heart->stop();
+  ros::shutdown();
+  exit(0);
+}
 
 int
 main(int argc, char **argv)
@@ -129,11 +145,23 @@ main(int argc, char **argv)
 
   ros::init(argc, argv, nodename);
   ros::NodeHandle n;
-
+  
+  HeartbeatClient hb(n, 1);
+  heart = &hb;
+	hb.start();
+  if (!hb.setState(heartbeat::State::INIT)){
+    ROS_WARN("Heartbeat state not set");
+  }
+  
+  signal(SIGINT, mySigintHandler);
+  
   std::string errmsg;
   mongodb_conn = new DBClientConnection(/* auto reconnect*/ true);
   if (! mongodb_conn->connect(mongodb, errmsg)) {
     ROS_ERROR("Failed to connect to MongoDB: %s", errmsg.c_str());
+    if (!hb.setState(heartbeat::State::STOPPED)){
+      ROS_WARN("Heartbeat state not set");
+    }
     return -1;
   }
 

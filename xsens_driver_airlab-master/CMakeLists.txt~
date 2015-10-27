@@ -119,8 +119,7 @@ include_directories(
 add_executable(xsensImu src/xsensImu.cpp)
 target_link_libraries(xsensImu
                       ${catkin_LIBRARIES}
-                      xsens
-		      heartbeat)
+                      xsens)
 
 
 
